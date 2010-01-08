@@ -1,0 +1,24 @@
+description: Make a (ajax) request.
+public:
+   initialize:
+      description: The constructor
+      options:
+         description: Description
+         type: function Object() { [native code] }
+         method:
+            description: The HTTP method to use (GET, POST, DELETE, ...).
+            type: function String() { [native code] }
+         onRequest:
+            description: Fired when the request begins.
+            type: function (){}
+         url:
+            description: The url to request
+            type: function String() { [native code] }
+         headers:
+            description: The HTTP headers sent to the backend.
+            type: function Object() { [native code] }
+            X-Requested-With:
+               description: The HTTP X-Requested-With option used by the backend.
+               type: function String() { [native code] }
+   examples:
+      0: var myHTMLRequest = new Request.HTML([options]);
