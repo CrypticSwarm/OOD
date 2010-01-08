@@ -13,31 +13,30 @@ require('./getter').copy((function(){
 	var cur;
 	var ret = { 
 		doc: function(what, desc, func){
-			var prev = cur || this, adjust = prev, noDoc = false;
+			var prev = cur || this;
+			cur = getFromPath(prev, what, true);
 			//don't hijack the variable if it is top level and already exists
-			adjust = (prev === this && getFromPath(prev, what)) || (noDoc = true && getFromPath(prev, what, true));
-			if(noDoc) {
-				adjust.description = desc;
-				cur = adjust;
+			if(prev === this) {
+				if(!cur.__doc__) cur.__doc__ = {};
+				cur = cur.__doc__;
 			}
-			else cur = adjust.__doc__ = {description: desc };
+			cur.description = desc;
 			func();
 			cur = prev;
 		},
 
 		group: function(name, func){
 			var prev = cur;
-			cur = prev[name] = {};
+			cur = getFromPath(prev, name, true);
 			func();
 			cur = prev;
 		},
 
 		arg: function(name, desc, type, func){
 			var prev = cur;
-			cur = prev[name] = { 
-				description: desc,
-				type: type
-			};
+			cur = getFromPath(prev, name, true);
+			cur.description = desc;
+			cur.type = type;
 			if(func) func();
 			cur = prev;
 		},
@@ -47,9 +46,7 @@ require('./getter').copy((function(){
 			cur.examples.push(('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, ''));
 		}
 	};
-	ret.key = function(name, type, desc, func){
-		ret.arg(name, desc, type, func);
-	};
+	ret.key = ret.arg;
 
 	return ret;
 

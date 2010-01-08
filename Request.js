@@ -3,21 +3,31 @@ require('./getter').grabInto(['./docs', './textDisplay'], GLOBAL);
 Event = function(){};
 
 doc('Request', 'Make a (ajax) request.', function(){
-    group('public', function(){
-        doc('initialize', 'The constructor', function(){
-            arg('options', 'Description', Object, function(){
-                key('method', String, 'The HTTP method to use (GET, POST, DELETE, ...).');
-                key('onRequest', Event, 'Fired when the request begins.');
-                key('url', String, 'The url to request');
-                key('headers', Object, 'The HTTP headers sent to the backend.', function(){
-                    key('X-Requested-With', String, 'The HTTP X-Requested-With option used by the backend.');
-                });
-            });
-        });
-        example(function(){
-            var myHTMLRequest = new Request.HTML([options]);
-        });
-    });
+	group('public', function(){
+		doc('initialize', 'The constructor', function(){
+			arg('options', 'Description', Object, function(){
+				key('method', 'The HTTP method to use (GET, POST, DELETE, ...).', String);
+				key('onRequest', 'Fired when the request begins.', Function);
+				key('url', 'The url to request', String);
+				key('headers', 'The HTTP headers sent to the backend.', Object, function(){
+					key('X-Requested-With', 'The HTTP X-Requested-With option used by the backend.', String);
+				});
+			});
+		});
+	});
+	example(function(){
+		var myHTMLRequest = new Request.HTML([options]);
+	});
+});
+
+doc('Request', 'Send things to other things', function(){
+	group('public', function(){
+		doc('send', 'send the request.', function(){
+			arg('options', 'Description', Object, function(){
+				key('method', 'The HTTP method to use (GET, POST, DELETE, ...).', String);
+			});
+		});
+	});
 });
 
 textDisplay(Request);
