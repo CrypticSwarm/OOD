@@ -1,11 +1,26 @@
+var getFromPath = function(obj, path, force) {
+	var tokens = path.split('.');
+	return tokens.every(function(part){
+		var isGood = true;
+		if(obj[part]) obj = obj[part];
+		else if(force) obj = obj[part] = {};
+		else isGood = false;
+		return isGood;
+	}) ? obj : null;
+};
+
 require('./getter').copy((function(){
 	var cur;
 	var ret = { 
 		doc: function(what, desc, func){
-			var prev = cur || this, adjust = prev
+			var prev = cur || this, adjust = prev, noDoc = false;
 			//don't hijack the variable if it is top level and already exists
-			if (prev === this && prev[what]) adjust = prev[what];
-			cur = adjust[(prev === this && prev[what] ? '__doc__'  : what)] = { description: desc };
+			adjust = (prev === this && getFromPath(prev, what)) || (noDoc = true && getFromPath(prev, what, true));
+			if(noDoc) {
+				adjust.description = desc;
+				cur = adjust;
+			}
+			else cur = adjust.__doc__ = {description: desc };
 			func();
 			cur = prev;
 		},
