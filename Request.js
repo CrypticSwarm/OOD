@@ -3,12 +3,12 @@ require('./getter').grabInto(['./docs', './textDisplay'], GLOBAL);
 doc('Request', 'Make a (ajax) request.', function(){
 	group('public', function(){
 		doc('initialize', 'The constructor', function(){
-			arg('options', 'Description', Object, function(){
-				key('method', 'The HTTP method to use (GET, POST, DELETE, ...).', String);
-				key('onRequest', 'Fired when the request begins.', Function);
-				key('url', 'The url to request', String);
-				key('headers', 'The HTTP headers sent to the backend.', Object, function(){
-					key('X-Requested-With', 'The HTTP X-Requested-With option used by the backend.', String);
+			arg('options', Object, 'Description', function(){
+				key('method', String, 'The HTTP method to use (GET, POST, DELETE, ...).');
+				key('onRequest', Function, 'Fired when the request begins.');
+				key('url', String, 'The url to request');
+				key('headers', Object, 'The HTTP headers sent to the backend.', function(){
+					key('X-Requested-With', String, 'The HTTP X-Requested-With option used by the backend.');
 				});
 			});
 		});
@@ -22,16 +22,17 @@ doc('Request.HTML', 'Send things to other things', function(){
 	inherits('Request');
 	group('public', function(){
 		doc('initialize', null, function(){
-			arg('options', null, Object, function(){
-				key('newOpt', 'This is a new option', String, 'VALUE');
+			arg('options', Object, null, function(){
+				key('newOpt', String, 'This is a new option', 'VALUE');
 			});
 			returns('Request.HTML', 'A new Request.HTML instance');
 			exception('Error', 'description');
 			alias('constructor');
+			note('blah blah blah blah blah blah');
 		});
 		doc('send', 'send the request.', function(){
-			arg('options', 'Description', Object, function(){
-				key('method', 'The HTTP method to use (GET, POST, DELETE, ...).', String);
+			arg('options', Object, 'Description', function(){
+				key('method', String, 'The HTTP method to use (GET, POST, DELETE, ...).');
 			});
 		});
 	});

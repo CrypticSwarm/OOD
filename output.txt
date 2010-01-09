@@ -1,62 +1,104 @@
 __doc__:
-   description: Make a (ajax) request.
-   public:
-      initialize:
-         description: The constructor
-         options:
-            description: Description
-            type: function Object() { [native code] }
-            method:
-               description: The HTTP method to use (GET, POST, DELETE, ...).
-               type: function String() { [native code] }
-            onRequest:
-               description: Fired when the request begins.
-               type: function Function() { [native code] }
-            url:
-               description: The url to request
-               type: function String() { [native code] }
-            headers:
-               description: The HTTP headers sent to the backend.
-               type: function Object() { [native code] }
-               X-Requested-With:
-                  description: The HTTP X-Requested-With option used by the backend.
-                  type: function String() { [native code] }
-   examples:
-      0: var myHTMLRequest = new Request.HTML([options]);
-HTML:
-   __doc__:
+   meta:
       description: Make a (ajax) request.
+      example:
+         0: var myRequest = new Request([options]);
+   body:
       public:
          initialize:
-            description: The constructor
-            options:
-               description: Description
-               type: function Object() { [native code] }
-               method:
-                  description: The HTTP method to use (GET, POST, DELETE, ...).
-                  type: function String() { [native code] }
-               onRequest:
-                  description: Fired when the request begins.
-                  type: function Function() { [native code] }
-               url:
-                  description: The url to request
-                  type: function String() { [native code] }
-               headers:
-                  description: The HTTP headers sent to the backend.
-                  type: function Object() { [native code] }
-                  X-Requested-With:
-                     description: The HTTP X-Requested-With option used by the backend.
-                     type: function String() { [native code] }
-               newOpt:
-                  description: This is a new option
-                  type: function String() { [native code] }
-         send:
-            description: send the request.
-            options:
-               description: Description
-               type: function Object() { [native code] }
-               method:
-                  description: The HTTP method to use (GET, POST, DELETE, ...).
-                  type: function String() { [native code] }
-      examples:
-         0: var myHTMLRequest = new Request.HTML([options]);
+            meta:
+               description: The constructor
+            body:
+               options:
+                  meta:
+                     description: Description
+                     type: function Object() { [native code] }
+                  defaults:
+                     method:
+                        meta:
+                           description: The HTTP method to use (GET, POST, DELETE, ...).
+                           type: function String() { [native code] }
+                     onRequest:
+                        meta:
+                           description: Fired when the request begins.
+                           type: function Function() { [native code] }
+                     url:
+                        meta:
+                           description: The url to request
+                           type: function String() { [native code] }
+                     headers:
+                        meta:
+                           description: The HTTP headers sent to the backend.
+                           type: function Object() { [native code] }
+                        defaults:
+                           X-Requested-With:
+                              meta:
+                                 description: The HTTP X-Requested-With option used by the backend.
+                                 type: function String() { [native code] }
+HTML:
+   __doc__:
+      meta:
+         description: Make a (ajax) request.
+         example:
+            0: var myRequest = new Request([options]);
+      body:
+         public:
+            initialize:
+               meta:
+                  description: The constructor
+                  returns:
+                     type: Request.HTML
+                     description: A new Request.HTML instance
+                  exceptions:
+                     0:
+                        type: Error
+                        description: description
+                  aliases:
+                     0: constructor
+                  notes:
+                     0: blah blah blah blah blah blah
+               body:
+                  options:
+                     meta:
+                        description: Description
+                        type: function Object() { [native code] }
+                     defaults:
+                        method:
+                           meta:
+                              description: The HTTP method to use (GET, POST, DELETE, ...).
+                              type: function String() { [native code] }
+                        onRequest:
+                           meta:
+                              description: Fired when the request begins.
+                              type: function Function() { [native code] }
+                        url:
+                           meta:
+                              description: The url to request
+                              type: function String() { [native code] }
+                        headers:
+                           meta:
+                              description: The HTTP headers sent to the backend.
+                              type: function Object() { [native code] }
+                           defaults:
+                              X-Requested-With:
+                                 meta:
+                                    description: The HTTP X-Requested-With option used by the backend.
+                                    type: function String() { [native code] }
+                        newOpt:
+                           meta:
+                              description: This is a new option
+                              type: function String() { [native code] }
+                           defaults: VALUE
+            send:
+               meta:
+                  description: send the request.
+               body:
+                  options:
+                     meta:
+                        description: Description
+                        type: function Object() { [native code] }
+                     defaults:
+                        method:
+                           meta:
+                              description: The HTTP method to use (GET, POST, DELETE, ...).
+                              type: function String() { [native code] }

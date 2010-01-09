@@ -10,10 +10,29 @@ var getFromPath = function(obj, path, force) {
 };
 
 require('./getter').copy((function(){
-	var cur, toplevel;
+	var cur, toplevel, meta;
+	var addArrayToMeta = function(key, func){
+		return function(){
+			if(!meta[key]) meta[key] = [];
+			meta[key].push(func.apply(this, arguments));
+			return meta[key];
+		};
+	};
+	var resetCurWrap = function(func) {
+		return function() {
+			var prev = cur || this, 
+				metaPrev = meta,
+				ret = func.apply(this, arguments);
+			cur = prev;
+			meta = metaPrev;
+			return ret;
+		};
+	};
+	var first = function(){ return arguments[0]; };
+
 	var ret = { 
 		doc: function(what, desc, func){
-			var prev = cur || this, ret, meta;
+			var prev = cur || this, ret;
 			if(prev === this) what += '.__doc__';
 			ret = getFromPath(prev, what, true);
 			meta = getFromPath(ret, 'meta', true);
@@ -26,17 +45,15 @@ require('./getter').copy((function(){
 			return ret;
 		},
 
-		group: function(name, func){
-			var prev = cur, ret;
-			ret = cur = getFromPath(prev, name, true);
+		group: resetCurWrap(function(name, func){
+			var ret;
+			ret = cur = getFromPath(cur, name, true);
 			func();
-			cur = prev;
 			return ret;
-		},
+		}),
 
-		arg: function(name, desc, type, defaults){
-			var prev = cur, ret, meta;
-			ret = cur = getFromPath(prev, name, true);
+		arg: resetCurWrap(function(name, type, desc, defaults){
+			var ret = cur = getFromPath(cur, name, true);
 			meta = getFromPath(cur, 'meta', true);
 			if(desc) meta.description = desc;
 			if(type) meta.type = type;
@@ -45,16 +62,8 @@ require('./getter').copy((function(){
 				defaults();
 			}
 			else if(defaults) cur.defaults = defaults;
-			cur = prev;
 			return ret;
-		},
-
-		example: function(func){
-			var meta = getFromPath(cur, 'meta', true);
-			if(!meta.examples) meta.examples = [];
-			meta.examples.push(('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, ''));
-			return meta.examples;
-		},
+		}),
 
 		inherits: function(paths) {
 			paths = paths instanceof Array ? paths : [paths];
@@ -72,35 +81,28 @@ require('./getter').copy((function(){
 			return toplevel;
 		},
 
+		example: addArrayToMeta('example', function(func){
+			return ('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, '');
+		}),
+
 		returns: function(type, description) {
-			var meta = getFromPath(cur, 'meta', true);
 			meta.returns = { type: type, description: description };
 		},
+
+		exception: addArrayToMeta('exceptions', function(type, description){
+			return {type: type, description: description};
+		}),
+
+		alias: addArrayToMeta('aliases', first),
+
+		note: addArrayToMeta('notes', first),
 
 		Any: function(){
 			return Array.prototype.slice.call(arguments);
 		},
 
-		exception: function(type, description){
-			var meta = getFromPath(cur, 'meta', true);
-			if(!meta.exceptions) meta.exceptions = [];
-			meta.exceptions.push({type: type, description: description});
-			return meta.exceptions;
-		},
-
-		alias: function(name) {
-			var meta = getFromPath(cur, 'meta', true);
-			if(!meta.aliases) meta.aliases = [];
-			meta.aliases.push(name);
-			return meta.exceptions;
-
-		}
-
 	};
 	ret.key = ret.arg;
-	ret.doc.alias = function(to, from){
-
-	};
 
 	return ret;
 
