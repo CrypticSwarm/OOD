@@ -20,8 +20,14 @@ doc('Request', 'Make a (ajax) request.', function(){
 	});
 });
 
-doc('Request', 'Send things to other things', function(){
+doc('Request.HTML', 'Send things to other things', function(){
+	inherits('Request');
 	group('public', function(){
+		doc('initialize', null, function(){
+			arg('options', null, Object, function(){
+				key('newOpt', 'This is a new option', String);
+			});
+		});
 		doc('send', 'send the request.', function(){
 			arg('options', 'Description', Object, function(){
 				key('method', 'The HTTP method to use (GET, POST, DELETE, ...).', String);

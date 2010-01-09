@@ -10,18 +10,16 @@ var getFromPath = function(obj, path, force) {
 };
 
 require('./getter').copy((function(){
-	var cur;
+	var cur, toplevel;
 	var ret = { 
 		doc: function(what, desc, func){
 			var prev = cur || this;
+			if(prev === this) what += '.__doc__';
 			cur = getFromPath(prev, what, true);
-			//don't hijack the variable if it is top level and already exists
-			if(prev === this) {
-				if(!cur.__doc__) cur.__doc__ = {};
-				cur = cur.__doc__;
-			}
-			cur.description = desc;
+			if(prev === this) toplevel = cur;
+			if(desc) cur.description = desc;
 			func();
+			if(prev === this) toplevel = null;
 			cur = prev;
 		},
 
@@ -35,8 +33,8 @@ require('./getter').copy((function(){
 		arg: function(name, desc, type, func){
 			var prev = cur;
 			cur = getFromPath(prev, name, true);
-			cur.description = desc;
-			cur.type = type;
+			if(desc) cur.description = desc;
+			if(type) cur.type = type;
 			if(func) func();
 			cur = prev;
 		},
@@ -44,6 +42,21 @@ require('./getter').copy((function(){
 		example: function(func){
 			if(!cur.examples) cur.examples = [];
 			cur.examples.push(('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, ''));
+		},
+
+		inherits: function(paths) {
+			paths = paths instanceof Array ? paths : [paths];
+			paths.forEach(function(path){
+				path += '.__doc__';
+				var mixin = getFromPath(this, path, true);
+				var copier = function(to, from){
+					for(var p in from) {
+						if(typeof from[p] == 'object') copier(getFromPath(to, p, true), from[p]);
+						else to[p] = from[p];
+					}
+				};
+				copier(toplevel, mixin);
+			});
 		}
 	};
 	ret.key = ret.arg;
