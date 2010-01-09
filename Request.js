@@ -1,7 +1,5 @@
 require('./getter').grabInto(['./docs', './textDisplay'], GLOBAL);
 
-Event = function(){};
-
 doc('Request', 'Make a (ajax) request.', function(){
 	group('public', function(){
 		doc('initialize', 'The constructor', function(){
@@ -16,7 +14,7 @@ doc('Request', 'Make a (ajax) request.', function(){
 		});
 	});
 	example(function(){
-		var myHTMLRequest = new Request.HTML([options]);
+		var myRequest = new Request([options]);
 	});
 });
 
@@ -25,8 +23,11 @@ doc('Request.HTML', 'Send things to other things', function(){
 	group('public', function(){
 		doc('initialize', null, function(){
 			arg('options', null, Object, function(){
-				key('newOpt', 'This is a new option', String);
+				key('newOpt', 'This is a new option', String, 'VALUE');
 			});
+			returns('Request.HTML', 'A new Request.HTML instance');
+			exception('Error', 'description');
+			alias('constructor');
 		});
 		doc('send', 'send the request.', function(){
 			arg('options', 'Description', Object, function(){
