@@ -72,11 +72,16 @@ require('./getter').copy((function(){
 		inherits: function(paths) {
 			paths = paths instanceof Array ? paths : [paths];
 			paths.forEach(function(path){
+				addArrayToMeta('parent', first)(path);
 				path += '.__doc__';
 				var mixin = getFromPath(this, path, true);
 				var copier = function(to, from){
 					for(var p in from) {
-						if(typeof from[p] == 'object') copier(getFromPath(to, p, true), from[p]);
+						if (from[p] instanceof Array) {
+							to[p] = [];
+							for(var j = 0, l = from[p].length; j < l; ++j) to[p].push(from[p][j]);
+						}
+						if (typeof from[p] == 'object') copier(getFromPath(to, p, true), from[p]);
 						else to[p] = from[p];
 					}
 				};
@@ -85,7 +90,7 @@ require('./getter').copy((function(){
 			return toplevel;
 		},
 
-		example: addArrayToMeta('example', function(func){
+		example: addArrayToMeta('examples', function(func){
 			return ('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, '');
 		}),
 
