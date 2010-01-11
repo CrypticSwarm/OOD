@@ -37,12 +37,26 @@ exports.output = function(out, obj) {
 		list('### ' + key, methods, method, '');
 	};
 
+	var collect = function(key, obj) {
+		var collection = [];
+		for (var p in obj) {
+      if (typeof obj[p] == 'object') {
+        if (obj[p][key]) collection.push({ key: p, obj: obj[p] });
+      }
+    }
+		return collection;
+	};
+
 	var method = function(keyobj){
-		var key = keyobj.key, obj = keyobj.obj;
+		var key = keyobj.key, obj = keyobj.obj, args = collect('meta', obj.body);
 		out(name + ' Method: ' + key + ' {#' + name + ':' + key + '}');
 		out(subHeader);
 		if (obj.meta.description) out('\n' + obj.meta.description + '\n');
 		if (obj.meta.examples) list('### Syntax', obj.meta.examples, first, '\t');
+		if (args.length > 0) list('### Arguments', args, function(o){ 
+			var req = o.obj.defaults ? 'optional' : 'required';
+			return o.key + ' - ' + typeAndDescription(o.obj.meta, req); 
+		}, '* ');
 		if (obj.meta.exceptions) list('### Exceptions', obj.meta.exceptions, typeAndDescription, '* ');
 		if (obj.meta.returns) list('### Returns', [obj.meta.returns], typeAndDescription, '* ');
 		return '';
@@ -58,7 +72,7 @@ exports.output = function(out, obj) {
 
 	var typeAndDescription = function(obj, opt) {
 		var type = obj.type;
-		if (type instanceof Function) type.replace(/function\s(.*)\s\(/, function(){ type = arguments[0] });
+		if (type instanceof Function) ('' + type).replace(/function\s*(.*)\s*\(/, function(){ type = arguments[1] });
 		if (opt) type += ' (' + opt + ')';
 		return '(*' + type + '*) ' + obj.description;
 	};
