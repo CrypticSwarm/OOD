@@ -6,7 +6,6 @@ We'll be basing design decisions from looking at other work as well as creating 
 
 Resources
 =========
- * http://gist.github.com/271929 - Sample code input and output.
  * http://crypticswarm.com/jsdoctor.html - Class doc stub generator (works in FF)
  * http://etherpad.com/eTWXP8TWgq - This README's Etherpad
 
@@ -549,5 +548,5 @@ Template:
 ### note
 `note(message:String)`
 
-### example
-`Doc example(description:String, fn:Function)`
+### examples
+`Doc example(desc:String, example:Function)`
