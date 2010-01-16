@@ -4,10 +4,10 @@ doc('Class', 'The base Class of the MooTools framework.', function(){
         key('Extends', Class, 'The parent class for this subclass.');
         key('Implements', [Array, Object, Class], 'Implements is similar to Extends, except that it adopts properties from one or more other classes without inheritance. Useful when implementing a default set of properties in multiple Classes. The Implements property should come after Extends but before all other properties.');
         key('protected ...', Function, 'Any property that starts with protected keyword will prevent access from outside of the class or subclasses.', function(){
-            example('...');
+            example('...', function(){});
         });
         key('linked ...', Function, 'Any property that starts with linked keyword will be copied into the property with no other changes.', function(){
-            example('...');
+            example('...'. function(){});
         });
     });
 
