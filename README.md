@@ -103,7 +103,7 @@ OOD Spec Examples
         group('generated', function(){
             note('The following functions come from the Math::* equivalent. The arguments to the function is like the equivalent Math::* except the first argument is the number for non-generics.');
             
-            example(function(){
+            example('', function(){
                 (-1).abs(); // 1
                 (0.5).ceil(); // 1
                 Number.max(2, 3); // 3
@@ -126,7 +126,7 @@ OOD Spec Examples
         
         doc('hasClass', 'If the element has the {0}.', function(){
             arg('className', String, 'The class name to test.');
-            example('...');
+            example(...);
         });
         
         // ...
@@ -327,7 +327,7 @@ _Option B_
         arg('selectors', [String, Array], 'A single, or multiple, selector string(s).');
         arg('style', Object, 'The key/value map of the styles.');
         
-        example(function(){
+        example('', function(){
             ART.Sheet.defineStyle('button', {
                     'font': 'moderna',
                     'font-size': 11,
@@ -360,7 +360,7 @@ __Option A__
         key('getActiveShortcuts', Function, 'Returns the active shortcuts.', function(){
             arg('keyboard', Keyboard, 'An optional active keyboard.', Keyboard.manager);
             returns(Array, 'A list of active shortcuts');
-            example('...'); 
+            example(...); 
         });
         
     });
@@ -370,7 +370,7 @@ __Options B__
     doc('Keyboard::getActiveShortcuts', 'Returns the active shortcuts.', function(){
         arg('keyboard', Keyboard, 'An optional active keyboard.', Keyboard.manager);
         returns(Array, 'A list of active shortcuts');
-        example('...');
+        example(...);
     });
 
 ### Options in a class
@@ -436,7 +436,7 @@ __Options B__
         key('decoder', Function, 'Decode a JSON string into a JavaScript object.', function(){
             arg('string', String, 'The JSON string.');
             arg('secure', Boolean, 'Whether the string should pass a security/sanity check.', function(){
-                example('...');
+                example(...);
             });
             exception(Error, 'Thrown if {1} and {0} is not secure, or if {@secure} and {0} is not secure.');
         });

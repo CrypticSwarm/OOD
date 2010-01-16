@@ -11,7 +11,7 @@ doc('Request', 'Make a (ajax) request.', function(){
 			});
 		});
 	});
-	example(function(){
+	example('', function(){
 		var myRequest = new Request([options]);
 	});
 });
