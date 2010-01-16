@@ -1,0 +1,24 @@
+\<html>
+	<head>
+		<title>ood_test</title>
+		<script src="utils/require.js"></script>
+		<script>
+		require = (function(req){
+			
+			var sys = {
+				puts: function(str) {
+					out.innerHTML = out.innerHTML + str + '\n';
+				}
+			};
+			
+			return function(id) {
+				return (id == 'sys') ? sys : req(id);
+			};
+		})(require);
+		</script>
+		<script src="utils/run.js"></script>
+	</head>
+	<body>
+		<pre id="out"></pre>
+	</body>
+</html>
