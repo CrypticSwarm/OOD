@@ -90,7 +90,7 @@ require('./utils/getter').copy((function(){
 			return toplevel;
 		},
 
-		example: addArrayToMeta('examples', function(func){
+		example: addArrayToMeta('examples', function(description, func){
 			return ('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, '');
 		}),
 
