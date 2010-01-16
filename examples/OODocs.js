@@ -36,8 +36,8 @@ doc('Any', 'A semantic helper.  It is used in situations as the name of an arg w
 
 doc('alias', 'Defines an aliased name for what is currently being documented.', function(){
 	arg('aliasedName', 'The name that the currently documented function is aliased as.');
-	examples('forEach aliased as each', function(){
-		doc('forEach', 'Iterates through an array calling the function on each iteration and passing the current item, index, and array to the function', funciton(){
+	example('forEach aliased as each', function(){
+		doc('forEach', 'Iterates through an array calling the function on each iteration and passing the current item, index, and array to the function', function(){
 			//The rest of the documentation.
 			alias('each');
 		});
@@ -59,7 +59,7 @@ doc('note', 'Adds on things to take note of in the current documentation context
 	arg('message', String, 'The message that is being noted.');
 });
 
-doc('examples', 'Adds on examples into the current documentation context.', function(){
+doc('example', 'Adds on examples into the current documentation context.', function(){
 	arg('description', String, 'A brief description about the example.');
 	arg('example', Function, 'The function with all the example code inside.');
 	note('The code inside the example arg function will not be executed.');
