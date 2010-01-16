@@ -9,7 +9,7 @@ var getFromPath = function(obj, path, force) {
 	}) ? obj : null;
 };
 
-require('./getter').copy((function(){
+require('./utils/getter').copy((function(){
 	var cur, toplevel, meta, doced = [];
 	var addArrayToMeta = function(key, func){
 		return function(){
