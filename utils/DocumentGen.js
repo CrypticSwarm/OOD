@@ -6,9 +6,6 @@ exports.generateDocs = function(out, files, format){
 	files.forEach(function(file) {
 		out('OUTPUTING ' + file + ' starting\n\n');
 		require(file);
-		getDoced().forEach(function(item) {
-			output(out, item);
-		});
-		clearDoced();
+		output(out, getTree());	
 	});
 };
