@@ -1,120 +1,172 @@
-var getFromPath = function(obj, path, force) {
-	var tokens = path === '...' ? [path] : path.split('.');
-	return tokens.every(function(part){
-		var isGood = true;
-		if(obj[part]) obj = obj[part];
-		else if(force) obj = obj[part] = {};
-		else isGood = false;
-		return isGood;
-	}) ? obj : null;
+(function(){
+	
+var ood = {_tree: {}, _stack: []};
+
+ood._stack.peek = function(){
+	return ood._stack[ood._stack.length - 1];
 };
 
-require('./utils/getter').copy((function(){
-	var cur, toplevel, meta, doced = [];
-	var addArrayToMeta = function(key, func){
-		return function(){
-			if(!meta[key]) meta[key] = [];
-			meta[key].push(func.apply(this, arguments));
-			return meta[key];
-		};
-	};
-	var resetCurWrap = function(func) {
-		return function() {
-			var prev = cur || this, 
-				metaPrev = meta,
-				ret = func.apply(this, arguments);
-			cur = prev;
-			meta = metaPrev;
-			return ret;
-		};
-	};
-	var first = function(){ return arguments[0]; };
+ood._execute = function(fn, context){
+	ood._stack.push(context);
+	fn.call(context);
+	ood._stack.pop();
+};
 
-	var docFuncs = {
-		doc: function(what, desc, func){
-			var prev = cur || this, ret, path = what;
-			if(prev === this) path += '.__doc__';
-			ret = getFromPath(prev, path, true);
-			meta = getFromPath(ret, 'meta', true);
-			cur = getFromPath(ret, 'body', true);
-			if(prev === this) { 
-				toplevel = ret;
-				doced.push({ name: what, doc: toplevel });
-			}
-			if(desc) meta.description = desc;
-			func();
-			if(prev === this) toplevel = null;
-			cur = prev;
-			return ret;
-		},
+ood.Doc = function(name, description, opt_fn, destructive){
+	this.name = name;
+	this.description = description;
+	if (opt_fn) ood._execute(opt_fn, this);
+};
 
-		group: resetCurWrap(function(name, func){
-			var ret;
-			ret = cur = getFromPath(cur, name, true);
-			func();
-			return ret;
-		}),
+ood.Arg = function(name, type, description, opt_fn_or_value, opt_destructive){
+	this.name = name;
+	this.type = type;
+	this.description = description;
+	this.default = opt_fn_or_value;
+	if (typeof opt_fn_or_value == 'function') this.default = ood._execute(opt_fn_or_value, this)
+	this.optional = (opt_fn_or_value == null || this.default == null);
+};
 
-		arg: resetCurWrap(function(name, type, desc, defaults){
-			if(name === docFuncs.Any) name = '...';
-			var ret = cur = getFromPath(cur, name, true);
-			meta = getFromPath(cur, 'meta', true);
-			if(desc) meta.description = desc;
-			if(type) meta.type = type;
-			if(defaults instanceof Function) {
-				cur = getFromPath(cur, 'defaults', true);
-				defaults();
-			}
-			else if(defaults) cur.defaults = defaults;
-			return ret;
-		}),
+ood.Arg.append = function(context, Arg){
+	if (!context.arguments) context.arguments = [];
+	context.arguments.push(Arg);
+	return Arg;
+};
 
-		inherits: function(paths) {
-			paths = paths instanceof Array ? paths : [paths];
-			paths.forEach(function(path){
-				addArrayToMeta('parent', first)(path);
-				path += '.__doc__';
-				var mixin = getFromPath(this, path, true);
-				var copier = function(to, from){
-					for(var p in from) {
-						if (from[p] instanceof Array) {
-							to[p] = [];
-							for(var j = 0, l = from[p].length; j < l; ++j) to[p].push(from[p][j]);
-						}
-						if (typeof from[p] == 'object') copier(getFromPath(to, p, true), from[p]);
-						else to[p] = from[p];
-					}
-				};
-				copier(toplevel, mixin);
-			});
-			return toplevel;
-		},
+ood.Return = function(type, description){
+	this.type = type;
+	this.description = description;
+};
 
-		example: addArrayToMeta('examples', function(description, func){
-			return ('' + func).replace(/^function\s*\(\)\s*\{\s*/, '').replace(/\s*\}$/, '');
-		}),
+ood.Example = function(description, example){
+	this.description = description;
+	this.example = example;
+};
 
-		returns: function(type, description) {
-			meta.returns = { type: (type === docFuncs.Any ? 'Any' : type ), description: description };
-		},
+ood.Example.append = function(context, Example){
+	if (!context.examples) context.examples = [];
+	context.examples.push(Example);
+	return Example;
+};
 
-		exception: addArrayToMeta('exceptions', function(type, description){
-			return {type: type, description: description};
-		}),
+ood.Key = ood.Arg;
+ood.Key.append = function(context, Key){
+	if (!context.keys) context.keys = [];
+	context.keys.push(Key);
+	return Key;
+};
 
-		alias: addArrayToMeta('aliases', first),
+ood.Group = function(name, context){
+	this.name = name;
+	this.context = context;
+	ood._execute(context, this);
+};
 
-		note: addArrayToMeta('notes', first),
+ood.Any = function(){
+	return Array.prototype.slice.call(arguments);
+};
 
-		Any: function(){
-			return Array.prototype.slice.call(arguments);
-		},
+ood.Exception = function(type, description){
+	this.type = type;
+	this.description = description;
+};
 
-	};
-	docFuncs.key = docFuncs.arg;
-	docFuncs.getDoced = function(){ return doced; };
-	docFuncs.clearDoced = function(){ doced = []; };
+ood.Exception.append = function(context, Exception){
+	if (!context.exceptions) context.exceptions = [];
+	context.exceptions.push(Exception);
+	return Exception;
+};
 
-	return docFuncs;
+ood.Alias = function(name){
+	this.name = name;
+};
 
-})(), exports);
+ood.Alias.append = function(context, Alias){
+	if (!context.aliases) context.aliases = [];
+	context.aliases.push(Alias);
+	return Alias;
+};
+
+ood.Note = function(message){
+	this.message = message;
+};
+
+ood.Note.append = function(context, Note){
+	if (!context.notes) context.notes = [];
+	context.notes.push(Note);
+	return Node;
+};
+
+ood.set = function(name, Doc){
+	ood._tree[name] = Doc;
+	return Doc;
+};
+
+ood.get = function(name){
+	return ood._tree[name] || null;
+};
+
+ood.doc = function(name, description, opt_fn, opt_destructive){
+	var current = ood._stack.peek();
+	var Doc = new ood.Doc(name, description, opt_fn, opt_destructive);
+	if (!current) {
+		ood.set(name, Doc);
+	} else {
+		if (!current.docs) current.docs = {};
+		current.docs[name] = Doc;
+	}
+	return Doc;
+};
+
+ood.arg = function(name, type, description, opt_fn_or_value, opt_destructive){
+	return ood.Arg.append(ood._stack.peek(), new ood.Arg(name, type, description, opt_fn_or_value, opt_destructive));
+};
+
+ood.returns = function(type, description){
+	return ood._stack.peek().returns = new ood.Return(type, description);
+};
+
+ood.example = function(description, example){
+	return ood.Example.append(ood._stack.peek(), new ood.Example(description, example));
+};
+
+ood.key = function(name, type, description, opt_fn_or_value, opt_destructive){
+	return ood.Key.append(ood._stack.peek(), new ood.Key(name, type, description, opt_fn_or_value, opt_destructive));
+};
+
+ood.group = function(name, context){
+	var current = ood._stack.peek();
+	if (!current.groups) current.groups = {};
+	current.groups[name] = new ood.Group(name, context);
+};
+
+ood.inherits = function(from){
+	if (typeof from == 'string') from = ood.get(from);
+	var current = ood._stack.peek();
+	if (!current.inherits) current.inherits = [];
+	current.inherits.push(from);
+};
+
+ood.exception = function(type, description){
+	return ood.Exception.append(ood._stack.peek(), new ood.Exception(type, description));
+};
+
+ood.alias = function(name){
+	return ood.Alias.append(ood._stack.peek(), new ood.Alias(name));
+};
+
+ood.note = function(message){
+	return ood.Note.append(ood._stack.peek(), new ood.Note(message));
+};
+
+ood.getTree = function(){
+	return ood._tree;
+};
+
+var oodoc = {};
+for (var prop in ood) if (/^(Any|[a-z])/.test(prop)) oodoc[prop] = ood[prop];
+
+require('./utils/getter').copy(oodoc, exports);
+
+})();
+
