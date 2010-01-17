@@ -7,7 +7,7 @@ exports.generateDocs = function(out, files, format){
 		out('OUTPUTING ' + file + ' starting\n\n');
 		require(file);
 		getDoced().forEach(function(item) {
-			output(out, item);
+			out(output(item));
 		});
 		clearDoced();
 	});

@@ -1,4 +1,5 @@
-exports.output = function(out, obj){
+exports.output = function(obj){
+	var returnString = '';
 
 	var textDisplay = function(obj, indent){
 		indent = indent || '';
@@ -6,16 +7,17 @@ exports.output = function(out, obj){
 		for(var p in obj){
 			type = typeof(obj[p]);
 			if(textDisplay[type]) {
-				out(indent + p + ':');
+				returnString += indent + p + ':\n';
 				textDisplay[type](obj[p], indent + '   ');
 			}
-			else out(indent + p + ': ' + obj[p]);
+			else returnString += indent + p + ': ' + obj[p] + '\n';
 		}
 	};
 
 	textDisplay.object = function(obj, indent) {
 		textDisplay(obj, indent);
 	};
-	out(obj.name + ' Documentation');
+	returnString += obj.name + ' Documentation\n';
 	textDisplay(obj.doc);
+	return returnString;
 };

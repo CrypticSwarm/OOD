@@ -1,7 +1,8 @@
-exports.output = function(out, obj) {
+exports.output = function(obj) {
 	var mainHeader = '===============================',
 		subHeader = '----------------------------',
-		name = obj.name;
+		name = obj.name, 
+		returnString = '';
 
 	var nth = function(n) { 
 		return function(){ 
@@ -10,10 +11,10 @@ exports.output = function(out, obj) {
 	var link = function() { return '[' + arguments[0] + '][]'; };
 
 	var header = function(key, obj){
-		out('Class: ' + key + ' {#' + key + '}');
-		out(mainHeader);
+		returnString += 'Class: ' + key + ' {#' + key + '}\n';
+		returnString += mainHeader + '\n';
 		if (!obj.meta) return;
-		if (obj.meta.description) out('\n' + obj.meta.description + '\n');
+		if (obj.meta.description) returnString += '\n' + obj.meta.description + '\n';
 		if (obj.meta.parent) list('### Extends', obj.meta.parent, link, '* '); 
 		if (obj.meta.examples) list('### Syntax', obj.meta.examples, first, '\t');
 		body(obj.body);
@@ -49,9 +50,9 @@ exports.output = function(out, obj) {
 
 	var method = function(keyobj){
 		var key = keyobj.key, obj = keyobj.obj, args = collect('meta', obj.body);
-		out(name + ' Method: ' + key + ' {#' + name + ':' + key + '}');
-		out(subHeader);
-		if (obj.meta.description) out('\n' + obj.meta.description + '\n');
+		returnString += name + ' Method: ' + key + ' {#' + name + ':' + key + '}\n';
+		returnString += subHeader + '\n';
+		if (obj.meta.description) returnString += '\n' + obj.meta.description + '\n\n';
 		if (obj.meta.examples) list('### Syntax', obj.meta.examples, first, '\t');
 		if (args.length > 0) list('### Arguments', args, function(o){ 
 			var req = o.obj.defaults ? 'optional' : 'required';
@@ -63,11 +64,12 @@ exports.output = function(out, obj) {
 	};
 
 	var list = function(heading, list, displayfunc, prefix) {
-		out(heading + '\n');
+		returnString += heading + '\n\n';
 		list.forEach(function(item, num){
-			out(( prefix == null ? num + 1 : prefix) + displayfunc(item));
+			var disp = displayfunc(item);
+			returnString += ( prefix == null ? num + 1 : prefix) + disp + '\n';
 		});
-		out('');
+		returnString += '\n';
 	};
 
 	var typeAndDescription = function(obj, opt) {
@@ -78,4 +80,5 @@ exports.output = function(out, obj) {
 	};
 
 	header(obj.name, obj.doc);
+	return returnString;
 };
