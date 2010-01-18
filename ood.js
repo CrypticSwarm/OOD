@@ -6,6 +6,12 @@ ood._stack.peek = function(){
 	return ood._stack[ood._stack.length - 1];
 };
 
+ood._stack.seek = function(fn){
+	var l = ood._stack.length, context = null;
+	while (l && --l) if (fn(context = ood._stack[l])) break;
+	return context;
+};
+
 ood._execute = function(fn, context){
 	ood._stack.push(context);
 	fn.call(context);
@@ -149,7 +155,12 @@ ood.group = function(name, context){
 // TODO(ibolmo): Remove inherits.
 ood.inherits = ood.inherit = function(from){
 	if (!from) {
-		
+		var path = [];
+		var parents = ood._stack.seek(function(context){
+			path.unshift(context.name);
+			if (context.inherits) return context;
+		});
+		// wip
 	} else {
 		if (typeof from != 'array') from = [from];
 		from = from.map(ood.get);
