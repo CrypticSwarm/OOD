@@ -18,13 +18,13 @@ ood.Doc = function(name, description, opt_fn, destructive){
 	if (opt_fn) ood._execute(opt_fn, this);
 };
 
-ood.Arg = function(name, type, description, opt_fn_or_value, opt_destructive){
+ood.Arg = function(name, type, description, opt_fn_or_value){
 	this.name = name;
 	this.type = type;
 	this.description = description;
-	this.default = opt_fn_or_value;
-	if (typeof opt_fn_or_value == 'function') this.default = ood._execute(opt_fn_or_value, this)
-	this.optional = (opt_fn_or_value == null || this.default == null);
+	this.value = opt_fn_or_value;
+	if (typeof opt_fn_or_value == 'function') this.value = ood._execute(opt_fn_or_value, this)
+	this.optional = (opt_fn_or_value == null || this.value == null);
 };
 
 ood.Arg.append = function(context, Arg){
@@ -49,7 +49,14 @@ ood.Example.append = function(context, Example){
 	return Example;
 };
 
-ood.Key = ood.Arg;
+ood.Key = function(name, type, description, opt_fn_or_value){
+	this.name = name;
+	this.type = type;
+	this.description = description;
+	this.value = opt_fn_or_value || null;
+	if (typeof opt_fn_or_value == 'function') this.value = ood._execute(opt_fn_or_value, this)
+};
+
 ood.Key.append = function(context, Key){
 	if (!context.keys) context.keys = [];
 	context.keys.push(Key);
@@ -98,8 +105,7 @@ ood.Note.append = function(context, Note){
 };
 
 ood.set = function(name, Doc){
-	ood._tree[name] = Doc;
-	return Doc;
+	return ood._tree[name] = Doc;
 };
 
 ood.get = function(name){
@@ -140,11 +146,17 @@ ood.group = function(name, context){
 	current.groups[name] = new ood.Group(name, context);
 };
 
-ood.inherits = function(from){
-	if (typeof from == 'string') from = ood.get(from);
-	var current = ood._stack.peek();
-	if (!current.inherits) current.inherits = [];
-	current.inherits.push(from);
+// TODO(ibolmo): Remove inherits.
+ood.inherits = ood.inherit = function(from){
+	if (!from) {
+		
+	} else {
+		if (typeof from != 'array') from = [from];
+		from = from.map(ood.get);
+		var current = ood._stack.peek();
+		if (!current.inherits) current.inherits = [];
+		current.inherits.push.apply(current.inherits, from);
+	}
 };
 
 ood.exception = function(type, description){
