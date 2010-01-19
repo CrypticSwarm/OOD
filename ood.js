@@ -1,11 +1,11 @@
 (function(){
 
 var ood = {_gtree: {}};
-ood.sandbox = function(){
+
+ood.sandbox = new function(){
 	ood._tree = {};
 	ood._ftree = {};
 };
-ood.sandbox();
 
 ood._stack = [];
 
@@ -19,74 +19,63 @@ ood._stack.seek = function(fn){
 	return context;
 };
 
+ood._append = function(key, ctor, context, args){
+	var Doc = {};
+	if (!context[key]) context[key] = [];
+	ood._execute(function(){
+		ctor.apply(Doc, args);
+		context[key].push(Doc);
+		if (Doc.name) context[key][Doc.name] = Doc;
+	}, {name: key});
+	return Doc;
+};
+
 ood._execute = function(fn, context){
 	ood._stack.push(context);
 	fn.call(context);
 	ood._stack.pop();
 };
 
-ood._getFromPath = function(path, force) {
-	var tokens = path === '...' ? [path] : path.split('.'),
-		obj = this;
-		return tokens.every(function(part){
-			var isGood = true;
-				if(typeof obj[part] != 'undefined') obj = obj[part];
-				else if(force) obj = obj[part] = {};
-				else isGood = false;
-			return isGood;
-	}) ? obj : null;
+ood._getFromPath = function(root, path, force) {
+	var context = root, paths = ((path === '...') ? [path] : path.split('.'));
+	return paths.every(function(path){
+		if (force && !(path in context)) context[path] = {};
+		return context = context[path];
+	}) && context || null;
 };
 
-ood._inheritable = function(key, value) {
-	if(value === null || value == ood.inherit) {
+ood._merge = function(Doc, key, value) {
+	if (value == ood.inherit) value = null;
+	if (value == null) {
 		//already being inherited or mixed
-		if(typeof this[key] != 'undefined') return;
-		ood._execute(function(){
-			var path = [key];
-			var parents = ood._stack.seek(function(context){
-				if (context.inherits) return context;
-				path.unshift(context.name);
-			});
-			parents = parents && parents.inherits || [];
-			path = path.join('.');
-			parents.some(function(parent){
-				var parentTree = ood.get(parent);
-				if(parentTree) value = ood._getFromPath.call(parentTree, path);
-				return value;
-			});
-		}, this);
+		if (typeof Doc[key] != 'undefined') return;
+		var path = [Doc.name, key];
+		var parents = ood._stack.seek(function(context){
+			if (context.inherits) return context;
+			path.unshift(context.name);
+		});
+		parents = parents && parents.inherits || [];
+		path = path.join('.');
+		parents.some(function(parent){
+			if (parent = ood.get(parent)) return value = ood._getFromPath(parent, path);
+		});
 	}
-	this[key] = value;
+	Doc[key] = value;
 };
 
 ood.Doc = function(name, description, opt_fn, destructive){
 	this.name = name;
-	ood._inheritable.call(this, 'description', description);
+	ood._merge(this, 'description', description);
 	if (opt_fn) ood._execute(opt_fn, this);
 };
 
 ood.Arg = function(name, type, description, opt_fn_or_value){
 	this.name = name;
 	this.type = type;
-	ood._inheritable.call(this, 'description', description);
+	ood._merge(this, 'description', description);
 	this.value = opt_fn_or_value;
-	if (typeof opt_fn_or_value == 'function') this.value = ood._execute(opt_fn_or_value, this)
+	if (typeof opt_fn_or_value == 'function') this.value = ood._execute(opt_fn_or_value, this);
 	this.optional = (opt_fn_or_value == null || this.value == null);
-};
-
-ood._append = function(key, construct, context, args){
-	var Obj = {};
-	if(!context[key]) context[key] = [];
-	ood._execute(function(){
-		construct.apply(Obj, args);
-		context[key].push(Obj);
-		if(Obj.name) context[key][Obj.name] = Obj;
-	}, {name: key});
-	return Obj;
-};
-
-ood.Arg.append = function(context, args){
-	return ood._append('arguments', ood.Arg, context, args);
 };
 
 ood.Return = function(type, description){
@@ -99,20 +88,12 @@ ood.Example = function(description, example){
 	this.example = example;
 };
 
-ood.Example.append = function(context, args){
-	return ood._append('examples', ood.Example, context, args);
-};
-
 ood.Key = function(name, type, description, opt_fn_or_value){
 	this.name = name;
 	this.type = type;
-	this.description = description;
+	ood._merge(this, 'description', description);
 	this.value = opt_fn_or_value || null;
 	if (typeof opt_fn_or_value == 'function') this.value = ood._execute(opt_fn_or_value, this)
-};
-
-ood.Key.append = function(context, args){
-	return ood._append('keys', ood.Key, context, args);
 };
 
 ood.Group = function(name, context){
@@ -130,24 +111,12 @@ ood.Exception = function(type, description){
 	this.description = description;
 };
 
-ood.Exception.append = function(context, args){
-	return ood._append('exceptions', ood.Exception, context, args);
-};
-
 ood.Alias = function(name){
 	this.name = name;
 };
 
-ood.Alias.append = function(context, args){
-	return ood._append('aliases', ood.Alias, context, args);
-};
-
 ood.Note = function(message){
 	this.message = message;
-};
-
-ood.Note.append = function(context, args){
-	return ood._append('notes', ood.Note, context, args);
 };
 
 ood.set = function(name, Doc){
@@ -158,16 +127,12 @@ ood.get = function(name){
 	return ood._gtree[name] || null;
 };
 
-ood._get = function(name){
-	return ood._tree[name] || null;
-};
-
 ood.doc = function(name, description, opt_fn, opt_destructive){
-	var current = ood._stack.peek();
 	var Doc;
 	ood._execute(function(){
 		Doc = new ood.Doc(name, description, opt_fn, opt_destructive);
 	}, {name: 'docs'});
+	var current = ood._stack.peek();
 	if (!current) {
 		ood.set(name, Doc);
 	} else {
@@ -178,7 +143,7 @@ ood.doc = function(name, description, opt_fn, opt_destructive){
 };
 
 ood.arg = function(name, type, description, opt_fn_or_value, opt_destructive){
-	return ood.Arg.append(ood._stack.peek(), [name, type, description, opt_fn_or_value, opt_destructive]);
+	return ood._append('arguments', ood.Arg, ood._stack.peek(), arguments);
 };
 
 ood.returns = function(type, description){
@@ -186,11 +151,11 @@ ood.returns = function(type, description){
 };
 
 ood.example = function(description, example){
-	return ood.Example.append(ood._stack.peek(), [description, example]);
+	return ood._append('examples', ood.Example, ood._stack.peek(), arguments);
 };
 
 ood.key = function(name, type, description, opt_fn_or_value, opt_destructive){
-	return ood.Key.append(ood._stack.peek(), [name, type, description, opt_fn_or_value, opt_destructive]);
+	return ood._append('keys', ood.Key, ood._stack.peek(), arguments);
 };
 
 ood.group = function(name, context){
@@ -204,22 +169,21 @@ ood.group = function(name, context){
 // TODO(ibolmo): Remove inherits.
 ood.inherits = ood.inherit = function(from){
 	if (!(from instanceof Array)) from = [from];
-//		from = from.map(ood._get);
 	var current = ood._stack.peek();
 	if (!current.inherits) current.inherits = [];
 	Array.prototype.push.apply(current.inherits, from);
 };
 
 ood.exception = function(type, description){
-	return ood.Exception.append(ood._stack.peek(), [type, description]);
+	return ood._append('exceptions', ood.Exception, ood._stack.peek(), arguments);
 };
 
 ood.alias = function(name){
-	return ood.Alias.append(ood._stack.peek(), [name]);
+	return ood._append('aliases', ood.Alias, ood._stack.peek(), [name]);
 };
 
 ood.note = function(message){
-	return ood.Note.append(ood._stack.peek(), [message]);
+	return ood._append('notes', ood.Note, ood._stack.peek(), [message]);
 };
 
 ood.getTree = function(){
