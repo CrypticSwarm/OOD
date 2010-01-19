@@ -1,11 +1,14 @@
-require('./getter').grabInto(['../ood'], GLOBAL);
+var getter = require('./getter');
+var ood = require('../ood');
+getter.copy(ood, GLOBAL);
 
-exports.generateDocs = function(out, files, format){
+exports.generateDocs = function(out, files, format, sandbox){
 	files = (files instanceof Array ? files : [files]);
 	var output = require(format).output;
 	files.forEach(function(file) {
 		out('OUTPUTING ' + file + ' starting\n\n');
-		require(file);
-		output(out, getTree());	
+		if(sandbox) ood.sandbox();
+		require('../examples/' + file);
+		output(out, popTree());	
 	});
 };
