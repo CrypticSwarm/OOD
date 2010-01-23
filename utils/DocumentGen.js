@@ -9,6 +9,6 @@ exports.generateDocs = function(out, files, format, sandbox){
 		out('OUTPUTING ' + file + ' starting\n\n');
 		if(sandbox) ood.sandbox();
 		require('../examples/' + file);
-		output(out, popTree());	
+		out(output(popTree()));	
 	});
 };
