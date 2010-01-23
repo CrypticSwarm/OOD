@@ -15,3 +15,11 @@ doc('Request', 'Make a (ajax) request.', function(){
 		var myRequest = new Request([options]);
 	});
 });
+
+doc('Request', null, function(){
+	group('protected', function(){
+		doc('setOptions', 'sets the options', function(){
+			arg('options', Object, 'options object');
+		});
+	});
+});
