@@ -131,9 +131,11 @@ ood.get = function(name){
 ood.doc = function(name, description, opt_fn, opt_destructive){
 	var Doc, current = ood._stack.peek();
 	ood._execute(function(){
-		Doc = ood.Doc.call(ood._getFromPath(current || ood._ftree, current && 'docs' || name, true), name, description, opt_fn, opt_destructive);
+		if(current)	Doc = ood.Doc.call(ood._getFromPath(current, 'docs', true), name, description, opt_fn, opt_destructive);
+		else [ood._gtree, ood._tree, ood._ftree].forEach(function(tree){
+			Doc = ood.Doc.call(ood._getFromPath(tree, name, true), name, description, opt_fn, opt_destructive);
+		});
 	}, {name: 'docs'});
-	if(!current) ood.set(name, Doc);
 	return Doc;
 };
 
