@@ -129,18 +129,11 @@ ood.get = function(name){
 };
 
 ood.doc = function(name, description, opt_fn, opt_destructive){
-	var Doc;
-	var current = ood._stack.peek();
-	var args = arguments;
+	var Doc, current = ood._stack.peek();
 	ood._execute(function(){
-		Doc = !current && ood.get(name) ? ood.Doc.apply(ood.get(name), args) : new ood.Doc(name, description, opt_fn, opt_destructive);
+		Doc = ood.Doc.call(ood._getFromPath(current || ood._ftree, current && 'docs' || name, true), name, description, opt_fn, opt_destructive);
 	}, {name: 'docs'});
-	if (!current) {
-		ood.set(name, Doc);
-	} else {
-		if (!current.docs) current.docs = {};
-		current.docs[name] = Doc;
-	}
+	if(!current) ood.set(name, Doc);
 	return Doc;
 };
 

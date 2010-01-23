@@ -1,4 +1,4 @@
-doc('Request.HTML', 'Send things to other things', function(){
+doc('Request::HTML', 'Send things to other things', function(){
 	inherits('Request');
 	group('public', function(){
 		doc('initialize', null, function(){
