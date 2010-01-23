@@ -67,6 +67,7 @@ ood.Doc = function(name, description, opt_fn, destructive){
 	this.name = name;
 	ood._merge(this, 'description', description);
 	if (opt_fn) ood._execute(opt_fn, this);
+	return this;
 };
 
 ood.Arg = function(name, type, description, opt_fn_or_value){
@@ -129,10 +130,11 @@ ood.get = function(name){
 
 ood.doc = function(name, description, opt_fn, opt_destructive){
 	var Doc;
-	ood._execute(function(){
-		Doc = new ood.Doc(name, description, opt_fn, opt_destructive);
-	}, {name: 'docs'});
 	var current = ood._stack.peek();
+	var args = arguments;
+	ood._execute(function(){
+		Doc = !current && ood.get(name) ? ood.Doc.apply(ood.get(name), args) : new ood.Doc(name, description, opt_fn, opt_destructive);
+	}, {name: 'docs'});
 	if (!current) {
 		ood.set(name, Doc);
 	} else {
